@@ -6,7 +6,7 @@ static gboolean delet_event(GtkWidget*, GdkEvent*, gpointer);
 // The main function
 // ---------------------------------------------------------------------------------------
 int main(int argc, char *argv[]) {
-    // Make the "Window" and "Label"
+    // Make the "GTK_Widget"
     GtkWidget *window, *label;
 
     // Initialization The "GTK"
