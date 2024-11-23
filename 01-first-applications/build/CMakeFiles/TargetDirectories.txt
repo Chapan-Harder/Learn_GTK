@@ -1,3 +1,0 @@
-/home/mohsenh/CODE/GTK_learn/01-first-applications/build/CMakeFiles/First_applications.dir
-/home/mohsenh/CODE/GTK_learn/01-first-applications/build/CMakeFiles/edit_cache.dir
-/home/mohsenh/CODE/GTK_learn/01-first-applications/build/CMakeFiles/rebuild_cache.dir
