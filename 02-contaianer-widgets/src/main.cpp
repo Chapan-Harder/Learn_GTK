@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     gint i;
 
     widget.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(widget.window), "02-contaianer-widgets [BOXES]");
+    gtk_window_set_title(GTK_WINDOW(widget.window), "02_contaianer-widgets [BOXES]");
     gtk_container_set_border_width(GTK_CONTAINER(widget.window), 20);
     gtk_widget_set_size_request(GTK_WIDGET(widget.window), 350, 420);
 
