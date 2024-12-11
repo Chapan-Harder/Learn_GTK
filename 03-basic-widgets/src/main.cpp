@@ -1,45 +1,65 @@
 // Import GTK
+#include "glib-object.h"
 #include <gtk/gtk.h>
 
 #define TITLE_NAME "03-basic-widgets"
 
 typedef struct {
     GtkWidget *window;
-    GtkWidget *spin_int;
-    GtkWidget *spin_float;
-    GtkWidget *vbox;
+    GtkWidget *button;
 }MakeWidget;
+
+typedef struct {
+    GdkRGBA fg[5];
+    GdkRGBA bg[5];
+    GdkRGBA light[5];
+    GdkRGBA dark[5];
+    GdkRGBA mid[5];
+    GdkRGBA text[5];
+    GdkRGBA base[5];
+    GdkRGBA text_aa[5];
+    GdkRGBA black, white;
+    PangoFontDescription *font_desc;
+    gint xthickness, ythickness;
+} MakeStyle;
+
+void apply_style(MakeWidget *widget, MakeStyle *theme) {
+    // Set the background color of the window to light blue
+    gtk_widget_override_background_color(widget->window, GTK_STATE_FLAG_NORMAL, &theme->bg[0]);
+
+    // Set the background color of the button to red
+    gtk_widget_override_background_color(widget->button, GTK_STATE_FLAG_NORMAL, &theme->fg[0]);
+
+    // Set the font of the button
+    gtk_widget_override_font(widget->button, theme->font_desc);
+}
 
 int main(int argc, char *argv[]) {
     MakeWidget widget;
+    MakeStyle theme;
 
     gtk_init(&argc, &argv);
+
+    // Initialize the style structure
+    theme.bg[0] = {0.3, 0.3, 1.0, 1.0}; // Light blue background for the window
+    theme.fg[0] = {0.0, 0.1, 0.2, 1.0}; // Red background for the button
+    theme.font_desc = pango_font_description_from_string("Noto Serif 12"); // Font for the button
 
     widget.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(widget.window), TITLE_NAME);
     gtk_container_set_border_width(GTK_CONTAINER(widget.window), 15);
-    gtk_widget_set_size_request(GTK_WIDGET(widget.window), 150, 100);
+    gtk_widget_set_size_request(GTK_WIDGET(widget.window), 250, 50);
 
     g_signal_connect(G_OBJECT(widget.window), "destroy", G_CALLBACK(gtk_main_quit), widget.window);
 
-    widget.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    widget.button = gtk_button_new_with_label("BUTTON");
 
-    /* Create two new adjustments. The first spans between 0 and 10, starting at 5 and
-    * moves in increments of 1. The second spans between 0 and 1, starting at 0.5 and
-    * moves in increments of 0.1. */
-    GtkAdjustment *integer = GTK_ADJUSTMENT(gtk_adjustment_new(5.0, 0.0, 10.0, 1.0, 2.0, 0.0));
-    GtkAdjustment *float_pt = GTK_ADJUSTMENT(gtk_adjustment_new(0.5, 0.0, 1.0, 0.1, 0.2, 0.0));
+    g_signal_connect_swapped(G_OBJECT(widget.button), "clicked", G_CALLBACK(gtk_main_quit), widget.window);
 
-    /* Create two new spin buttons. The first will display no decimal places and the
-    * second will display one decimal place. */
-    widget.spin_int = gtk_spin_button_new(GTK_ADJUSTMENT(integer), 1.0, 0);
-    widget.spin_float = gtk_spin_button_new(GTK_ADJUSTMENT(float_pt), 0.1, 1);
-
-    gtk_box_pack_start(GTK_BOX(widget.vbox), GTK_WIDGET(widget.spin_int), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(widget.vbox), GTK_WIDGET(widget.spin_float), TRUE, TRUE, 0);
-
-    gtk_container_add(GTK_CONTAINER(widget.window), GTK_WIDGET(widget.vbox));
+    gtk_container_add(GTK_CONTAINER(widget.window), GTK_WIDGET(widget.button));
     gtk_widget_show_all(GTK_WIDGET(widget.window));
+
+    apply_style(&widget, &theme);
 
     gtk_main();
     return 0;
