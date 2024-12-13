@@ -1,51 +1,44 @@
-use std::rc::Rc;
-
 use glib::clone;
-use gtk::{glib, prelude::*, Application, ApplicationWindow, Box, Button};
+use gtk::{glib, prelude::*, Application, ApplicationWindow, Button};
 
-const TITLE: &str = r#"first-applications-rs-01"#;
+const TITLE_WINDOW: &str = r#"first-applications-rs-01"#;
 const APP_ID: &str = r#"ir.app"#;
 
 struct MakeWidget {
-    window: Rc<ApplicationWindow>,
-    vbox: Rc<Box>,
-    button: Rc<Button>,
+    window: ApplicationWindow,
+    button: Button,
 }
 
-fn ui_section(app: &Application) -> MakeWidget {
-    let window: ApplicationWindow = ApplicationWindow::builder()
-        .application(app)
-        .title(TITLE)
-        .default_width(400)
-        .default_height(200)
-        .build();
-
-    let vbox: Box = Box::builder()
-        .orientation(gtk::Orientation::Vertical)
-        .spacing(10)
-        .build();
-
-    let button: Button = Button::builder().label("EXIT BUTTON").build();
-
-    button.connect_clicked(clone!(@weak window => move |_| window.close()));
-
-    vbox.append(&button);
-    window.set_child(Some(&vbox));
-
-    window.present();
-
-    return MakeWidget {
-        window: Rc::new(window),
-        vbox: Rc::new(vbox),
-        button: Rc::new(button),
+fn ui_app(app: &Application) {
+    let widget: MakeWidget = MakeWidget {
+        window: ApplicationWindow::new(app),
+        button: Button::new(),
     };
+
+    widget.window.set_title(Some(TITLE_WINDOW));
+    widget.window.set_size_request(300, 200);
+
+    widget.button.set_label("EXIT_BUTTON");
+    widget.button.set_margin_top(15);
+    widget.button.set_margin_bottom(15);
+    widget.button.set_margin_start(15);
+    widget.button.set_margin_end(15);
+
+    let window_clone: ApplicationWindow = widget.window.clone();
+    widget
+        .button
+        .connect_clicked(clone!(@weak window_clone => move |_| window_clone.close();));
+
+    widget.window.set_child(Some(&widget.button));
+    widget.window.present();
 }
 
 fn main() {
     let app: Application = Application::builder().application_id(APP_ID).build();
 
     app.connect_activate(|app| {
-        ui_section(app);
+        ui_app(&app);
     });
+
     app.run();
 }
