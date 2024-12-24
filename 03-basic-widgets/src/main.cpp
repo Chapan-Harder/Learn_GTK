@@ -5,54 +5,81 @@
 
 typedef struct {
     GtkWidget *window;
-    GtkWidget *button;
+    GtkWidget *chooser2;
+    GtkWidget *chooser1;
     GtkWidget *label;
-    GtkWidget *hbox;
+    GtkWidget *vbox;
 }MakeWidget;
 
 typedef struct {
-    GdkColor color;
-}MakeStyle;
+    GtkFileFilter *filter1;
+    GtkFileFilter *filter2;
+}MakeFileFilter;
 
-static void color_changed(GtkColorButton*, GtkWidget*);
+static void folder_changer(GtkFileChooser*, GtkFileChooser*);
+static void file_changed(GtkFileChooser*, GtkLabel*);
 
 int main(int argc, char *argv[]) {
     MakeWidget widget;
-    MakeStyle style;
+    MakeFileFilter file_filter;
 
     gtk_init(&argc, &argv);
 
     widget.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(widget.window), TITLE_NAME);
     gtk_container_set_border_width(GTK_CONTAINER(widget.window), 15);
-    gtk_widget_set_size_request(GTK_WIDGET(widget.window), 300, 100);
+    gtk_widget_set_size_request(GTK_WIDGET(widget.window), 300, 200);
 
     g_signal_connect(G_OBJECT(widget.window), "destroy", G_CALLBACK(gtk_main_quit), widget.window);
 
-    widget.hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    widget.label = gtk_label_new("");
 
-    /* Set the initial color as #003366 and set the dialog title. */
-    gdk_color_parse("#003366", &style.color);
-    widget.button = gtk_color_button_new_with_color(&style.color);
-    gtk_color_button_set_title(GTK_COLOR_BUTTON(widget.button), "Select The Color");
+    /* Create two buttons, one to select a folder and one to select a file. */
+    widget.chooser1 = gtk_file_chooser_button_new("Chooser A Folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+    widget.chooser2 = gtk_file_chooser_button_new("Chooser A Folder", GTK_FILE_CHOOSER_ACTION_OPEN);
 
-    widget.label = gtk_label_new("Look At My Color!");
-    gtk_widget_modify_fg(GTK_WIDGET(widget.label), GTK_STATE_NORMAL, &style.color);
+    /* Monitor when the selected folder or file are changed. */
+    g_signal_connect(G_OBJECT(widget.chooser1), "selection_changed", G_CALLBACK(folder_changer), widget.chooser2);
+    g_signal_connect(G_OBJECT(widget.chooser2), "selection_changed", G_CALLBACK(file_changed), widget.label);
 
-    g_signal_connect(G_OBJECT(widget.button), "color_set", G_CALLBACK(color_changed), widget.label);
+    /* Set both file chooser buttons to the location of the user's home directory. */
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget.chooser1), g_get_home_dir());
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget.chooser2), g_get_home_dir());
 
-    gtk_box_pack_start(GTK_BOX(widget.hbox), GTK_WIDGET(widget.button), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(widget.hbox), GTK_WIDGET(widget.label), TRUE, TRUE, 0);
+    /* Provide a filter to show all files and one to show only 3 types of images. */
+    file_filter.filter1 = gtk_file_filter_new();
+    file_filter.filter2 = gtk_file_filter_new();
+    gtk_file_filter_set_name(GTK_FILE_FILTER(file_filter.filter1), "Image Files");
+    gtk_file_filter_set_name(GTK_FILE_FILTER(file_filter.filter2), "All Files");
+    gtk_file_filter_add_pattern(GTK_FILE_FILTER(file_filter.filter1), "*.png");
+    gtk_file_filter_add_pattern(GTK_FILE_FILTER(file_filter.filter1), "*.jpg");
+    gtk_file_filter_add_pattern(GTK_FILE_FILTER(file_filter.filter1), "*.gif");
+    gtk_file_filter_add_pattern(GTK_FILE_FILTER(file_filter.filter2), "*");
 
-    gtk_container_add(GTK_CONTAINER(widget.window), GTK_WIDGET(widget.hbox));
+    /* Add both the filters to the file chooser button that selects files. */
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(widget.chooser2), file_filter.filter1);
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(widget.chooser2), file_filter.filter2);
+
+    widget.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_box_pack_start(GTK_BOX(widget.vbox), GTK_WIDGET(widget.chooser1), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(widget.vbox), GTK_WIDGET(widget.chooser2), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(widget.vbox), GTK_WIDGET(widget.label), TRUE, TRUE, 0);
+
+    gtk_container_add(GTK_CONTAINER(widget.window), GTK_WIDGET(widget.vbox));
     gtk_widget_show_all(GTK_WIDGET(widget.window));
 
     gtk_main();
     return 0;
 }
 
-static void color_changed(GtkColorButton *button, GtkWidget *label) {
-    MakeStyle style;
-    gtk_color_button_get_color(GTK_COLOR_BUTTON(button), &style.color);
-    gtk_widget_modify_fg(GTK_WIDGET(label), GTK_STATE_NORMAL, &style.color);
+/* When a folder is selected, use that as the new location of the other chooser. */
+static void folder_changer(GtkFileChooser *chooser1, GtkFileChooser *chooser2) {
+    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser1));
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser2), folder);
+}
+
+/* When a file is selected, display the full path in the GtkLabel widget. */
+static void file_changed(GtkFileChooser *chooser2, GtkLabel *label) {
+    gchar *file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser2));
+    gtk_label_set_text(GTK_LABEL(label), file);
 }

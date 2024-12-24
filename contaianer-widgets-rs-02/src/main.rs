@@ -1,42 +1,38 @@
-use ::gtk::{glib, prelude::*, Application, ApplicationWindow, Box, Button};
-// use glib::clone;
+use gtk::{glib, prelude::*, Application, ApplicationWindow, Box as GtkBox, Button};
 
-const TITLE_WINDOW: &str = r#"contaianer-widgets-rs-02"#;
+const TITLE_WINDOW: &str = r#"container-widgets-rs-02"#;
 const APP_ID: &str = r#"ir.app"#;
 
 const NAMES: [&str; 4] = ["Andrew", "Joe", "Samantha", "Jonathan"];
 
-struct MakeWidget {
-    window: ApplicationWindow,
-    vbox: Box,
-    button: Button,
-}
-
 fn ui_app(app: &Application) {
-    let widget: MakeWidget = MakeWidget {
-        window: ApplicationWindow::new(app),
-        vbox: Box::new(gtk::Orientation::Vertical, 0),
-        button: Button::new(),
-    };
+    let window = ApplicationWindow::new(app);
+    let vbox = GtkBox::new(gtk::Orientation::Vertical, 0);
 
-    widget.window.set_title(Some(TITLE_WINDOW));
-    widget.window.set_default_size(300, 200);
+    window.set_title(Some(TITLE_WINDOW));
+    window.set_size_request(300, 200);
 
-    for i in 0..=3 {
-        widget.button.set_label(NAMES[i]);
-        widget.vbox.append(&widget.button);
+    for i in NAMES.iter() {
+        let button = Button::with_label(i);
+        button.set_hexpand_set(true);
+        button.set_vexpand(true);
+        vbox.append(&button);
 
-        widget.button.connect_destroy(Some(&widget.button));
+        let button_clone = button.clone();
+        button.connect_clicked(move |_| {
+            button_clone.unparent();
+        });
     }
 
-    widget.window.present();
+    window.set_child(Some(&vbox));
+    window.present();
 }
 
 fn main() {
-    let app: Application = Application::builder().application_id(APP_ID).build();
+    let app = Application::builder().application_id(APP_ID).build();
 
     app.connect_activate(|app| {
-        ui_app(&app);
+        ui_app(app);
     });
 
     app.run();
