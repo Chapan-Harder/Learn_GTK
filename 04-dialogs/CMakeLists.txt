@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30.3)
-project(First_applications)
+project(Dialogs.cm)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -12,6 +12,6 @@ link_directories(${GTK3_LIBRARY_DIRS})
 
 add_definitions(${GTK3_CFLAGS_OTHER})
 
-add_executable(First_applications src/main.cpp)
+add_executable(Dialogs.cm src/main.cpp)
 
-target_link_libraries(First_applications ${GTK3_LIBRARIES})
+target_link_libraries(Dialogs.cm ${GTK3_LIBRARIES})
